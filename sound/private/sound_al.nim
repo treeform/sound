@@ -36,6 +36,10 @@ proc newSoundWithStream*(s: Stream): Sound =
     result = newSound()
     result.dataSource = newDataSourceWithStream(s)
 
+proc newSoundFromDataSource*(ds: DataSource): Sound =
+    result = newSound()
+    result.dataSource = ds
+
 proc isSourcePlaying(src: ALuint): bool {.inline.} =
     var state: ALenum
     alGetSourcei(src, AL_SOURCE_STATE, addr state)

@@ -14,7 +14,7 @@ type
 # Changed autoplay behavior according to https://developers.google.com/web/updates/2017/09/autoplay-policy-changes#webaudio
 proc newAudioContext(): AudioContext {.jsimportgWithName: """
     function() {
-        var AudioContext = (window.AudioContext || window.webkitAudioContext || null); 
+        var AudioContext = (window.AudioContext || window.webkitAudioContext || null);
         if (AudioContext) {
             var context = new AudioContext();
             if (context.state == "suspended") {

@@ -20,7 +20,7 @@ proc loadVorbis(v: Vorbis, outBuffer: var pointer, outLen, outChannels, outBitsP
 
     #var endian: cint = 0 # 0 for Little-Endian, 1 for Big-Endian
 
-    const OGG_BUFFER_SIZE = 32768
+    const OGG_BUFFER_SIZE = 10*1024*1024
 
     var curOffset: uint
     while true:
