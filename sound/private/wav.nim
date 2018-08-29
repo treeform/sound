@@ -1,11 +1,10 @@
 ## Reads wave files
-
 import streams
-import print
-
 
 proc loadWavFile*(path: string, buffer: var pointer, len, channels, bitsPerSample, samplesPerSec: var int) =
+  ## Reads wav sound file format
 
+  # OMG is this like the easiest format to read ever?
   var f = newFileStream(open(path))
   let
     chunkID = f.readStr(4)
@@ -26,21 +25,6 @@ proc loadWavFile*(path: string, buffer: var pointer, len, channels, bitsPerSampl
 
     data = f.readStr(int subchunk2Size)
 
-  print chunkID
-  print chunkSize
-  print format
-
-  print subchunk1ID
-  print subchunk1Size
-  print audioFormat
-  print numChannels
-  print sampleRate
-  print byteRate
-  print blockAlign
-  print bitsPerSample2
-
-  print subchunk2ID
-  print subchunk2Size
 
   assert chunkID == "RIFF"
   assert format == "WAVE"

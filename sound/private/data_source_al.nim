@@ -6,6 +6,7 @@ type
     DataSource* = ref object
         mDuration*: float
         mBuffer*: ALuint
+        channels*: int
 
 proc finalizeDataSource(s: DataSource) =
     if s.mBuffer != 0: alDeleteSources(1, addr s.mBuffer)
@@ -39,6 +40,7 @@ proc newDataSourceWithPCMData*(data: pointer, dataLength, channels, bitsPerSampl
     let bytesPerSample = bitsPerSample div 8
     let samplesInChannel = dataLength div bytesPerSample
     result.mDuration = (samplesInChannel.ALint / (freq.ALint * channels).ALint).float
+    result.channels = channels
 
 proc newDataSourceWithPCMData*(data: openarray[byte], channels, bitsPerSample, samplesPerSecond: int): DataSource {.inline.} =
     ## This function is only availbale for openal for now. Sorry.

@@ -1,11 +1,14 @@
 import openal, data_source_al
 import streams, logging
 
-type Sound* = ref object
-    mDataSource: DataSource
-    src: ALuint
-    mGain: ALfloat
-    mLooping: bool
+type
+    Sound* = ref object
+        mDataSource: DataSource
+        src: ALuint
+        mGain: ALfloat
+        mLooping: bool
+
+    Source* = ALuint
 
 var activeSounds: seq[Sound]
 
@@ -47,6 +50,9 @@ proc isSourcePlaying(src: ALuint): bool {.inline.} =
 
 proc duration*(s: Sound): float {.inline.} = s.mDataSource.mDuration
 
+proc stop*(src: Source) =
+    alSourceStop(src)
+
 proc setLooping*(s: Sound, flag: bool) =
     s.mLooping = flag
     if s.src != 0:
@@ -80,6 +86,26 @@ proc play*(s: Sound) =
         else:
             alSourceStop(s.src)
             alSourcePlay(s.src)
+
+
+proc playWithSource*(s: Sound): Source =
+    if s.mDataSource.channels != 1:
+        echo "Only mono sounds work in 3d"
+    if s.mDataSource.mBuffer != 0:
+        var src = reclaimInactiveSource()
+        if src == 0:
+            alGenSources(1, addr src)
+            activeSounds.add(s)
+        alSourcei(src, AL_BUFFER, cast[ALint](s.mDataSource.mBuffer))
+        alSourcef(src, AL_GAIN, s.mGain)
+        alSourcei(src, AL_LOOPING, ALint(s.mLooping))
+        alSourcePlay(src)
+        return src
+
+
+proc setPos*(src: Source, x, y, z: float) =
+    alSource3f(src, AL_POSITION, x, y, z)
+
 
 proc `gain=`*(s: Sound, v: float) =
     s.mGain = v

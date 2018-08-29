@@ -6,9 +6,9 @@ var alContext* : ALCcontext
 proc createContext*() =
     if contextInited: return
     contextInited = true
-    var listenerPos = [ALfloat(0.0),0.0,4.0]
+    var listenerPos = [ALfloat(0.0),0.0,0.0]
     var listenerVel = [ALfloat(0.0),0.0,0.0]
-    var listenerOri = [ALfloat(0.0),0.0,1.0, 0.0,1.0,0.0]
+    var listenerOri = [ALfloat(0.0),0.0,1.0, 0.0,-1.0,0.0]
 
     let device = alcOpenDevice(nil)
     if device.isNil:
