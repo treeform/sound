@@ -1,4 +1,4 @@
-import openal, data_source_al
+import sound/openal, sound/data_source
 import streams, logging
 
 type

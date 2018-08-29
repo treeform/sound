@@ -1,1 +1,1 @@
-switch("path", "$projectDir/../sound")
+switch("path", "$projectDir/../src")

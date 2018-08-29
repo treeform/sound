@@ -1,5 +1,5 @@
-import openal, context_al
-import vorbis_utils, wav
+import openal, context
+import vorbis, wav
 import streams, os, strutils
 
 type
@@ -62,7 +62,6 @@ proc newDataSourceWithFile*(path: string): DataSource =
     result = newDataSourceWithPCMData(buffer, len, channels, bitsPerSample, samplesPerSecond)
   else:
     raise newException(IOError, "Format not supported " & path & " (ogg or wav only)")
-
 
 proc newDataSourceWithStream*(s: Stream): DataSource =
   var buffer: pointer
