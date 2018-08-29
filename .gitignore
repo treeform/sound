@@ -1,1 +1,8 @@
-nimcache/
+# ignore files with no extention:
+*
+!*/
+!*.*
+
+# normal ignores:
+*.exe
+nimcache

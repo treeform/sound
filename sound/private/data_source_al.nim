@@ -1,6 +1,6 @@
 import openal, context_al
-import vorbis_utils
-import streams
+import vorbis_utils, wav
+import streams, os, strutils
 
 type
     DataSource* = ref object
@@ -45,11 +45,22 @@ proc newDataSourceWithPCMData*(data: openarray[byte], channels, bitsPerSample, s
     newDataSourceWithPCMData(unsafeAddr data[0], data.len, channels, bitsPerSample, samplesPerSecond)
 
 proc newDataSourceWithFile*(path: string): DataSource =
-    var buffer: pointer
-    var len, channels, bitsPerSample, samplesPerSecond: int
-    loadVorbisFile(path, buffer, len, channels, bitsPerSample, samplesPerSecond)
-    result = newDataSourceWithPCMData(buffer, len, channels, bitsPerSample, samplesPerSecond)
-    freeVorbisBuffer(buffer)
+    if not fileExists(path):
+        raise newException(IOError, "File " & path & " not found")
+    if path.endsWith(".ogg"):
+        var buffer: pointer
+        var len, channels, bitsPerSample, samplesPerSecond: int
+        loadVorbisFile(path, buffer, len, channels, bitsPerSample, samplesPerSecond)
+        result = newDataSourceWithPCMData(buffer, len, channels, bitsPerSample, samplesPerSecond)
+        freeVorbisBuffer(buffer)
+    elif path.endswith(".wav"):
+        var buffer: pointer
+        var len, channels, bitsPerSample, samplesPerSecond: int
+        loadWavFile(path, buffer, len, channels, bitsPerSample, samplesPerSecond)
+        result = newDataSourceWithPCMData(buffer, len, channels, bitsPerSample, samplesPerSecond)
+    else:
+        raise newException(IOError, "Format not supported " & path & " (ogg or wav only)")
+
 
 proc newDataSourceWithStream*(s: Stream): DataSource =
     var buffer: pointer
