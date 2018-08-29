@@ -17,6 +17,12 @@ else:
   {.pragma: alimport, importc.}
 
 const
+
+  AL_SOURCE_TYPE* : cint =                           0x1027
+  AL_STATIC* : cint =                                0x1028
+  AL_STREAMING* : cint =                             0x1029
+  AL_UNDETERMINED* : cint =                          0x1030
+
   AL_FORMAT_MONO8* : cint =                          0x1100
   AL_FORMAT_MONO16* : cint =                         0x1101
   AL_FORMAT_STEREO8* : cint =                        0x1102
