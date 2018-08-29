@@ -6,7 +6,7 @@ type
     DataSource* = ref object
         wfx*: WAVEFORMATEX
         data*: seq[uint8]
-        mDuration*: float
+        duration*: float
 
 proc newDataSource(): DataSource =
     createContext()
@@ -17,7 +17,7 @@ proc newDataSourceWithPCMData*(data: pointer, dataLength, channels, bitsPerSampl
 
     let bytesPerSample = bitsPerSample div 8
     let samplesInChannel = dataLength div bytesPerSample
-    result.mDuration = samplesInChannel / (samplesPerSecond * channels)
+    result.duration = samplesInChannel / (samplesPerSecond * channels)
 
     result.wfx.wFormatTag = 1
     result.wfx.nChannels = WORD(channels)

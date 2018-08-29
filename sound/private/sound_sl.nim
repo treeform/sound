@@ -58,7 +58,7 @@ proc newSoundWithURL*(url: string): Sound =
         raise newException(Exception, "Unknown URL: " & url)
 
     result.player = nil
-    result.mGain = 1
+    result.gain = 1
     result.fd = -1
 
 proc newSoundWithFile*(path: string): Sound = # Deprecated... kinda...
@@ -68,7 +68,7 @@ proc newSoundWithFile*(path: string): Sound = # Deprecated... kinda...
     result.path = path
     result.assetOrFile = true
     result.player = nil
-    result.mGain = 1
+    result.gain = 1
     result.fd = -1
 
 type ResourseDescriptor {.exportc.} = object
@@ -110,7 +110,7 @@ proc setLooping(pl: SLObjectItf not nil, flag: bool) =
         discard seek.setLoop(flag, 0, SL_TIME_UNKNOWN)
 
 proc setLooping*(s: Sound, flag: bool) =
-    s.mLooping = flag
+    s.looping = flag
     let pl = s.player
     if not pl.isNil:
         pl.setLooping(flag)
@@ -211,7 +211,7 @@ proc collectInactiveSounds() {.inline.} =
         # SL_PLAYSTATE_PAUSED for actually active looping players that have gone
         # through one loop and continue playing, so we cannot dispose looping
         # players here. Instead they may be disposed in stop().
-        if not pl.isNil and not s.mLooping and pl.playState != SL_PLAYSTATE_PLAYING:
+        if not pl.isNil and not s.looping and pl.playState != SL_PLAYSTATE_PLAYING:
             pl.destroy(s.fd)
             s.player = nil
             s.fd = -1
@@ -261,8 +261,8 @@ proc play*(s: Sound) =
             discard pl.realize()
             s.player = pl
             if not pl.isNil:
-                pl.assumeNotNil.setLooping(s.mLooping)
-                pl.assumeNotNil.setGain(s.mGain)
+                pl.assumeNotNil.setLooping(s.looping)
+                pl.assumeNotNil.setGain(s.gain)
                 pl.assumeNotNil.setPlayState(SL_PLAYSTATE_PLAYING)
             if activeSounds.isNil: activeSounds = @[]
             activeSounds.add(s)
@@ -302,9 +302,9 @@ proc attenuationToGain(a: float): float {.inline.} =
 ]#
 
 proc `gain=`*(s: Sound, v: float) =
-    s.mGain = v
+    s.gain = v
     let pl = s.player
     if not pl.isNil:
         pl.setGain(v)
 
-proc gain*(s: Sound): float {.inline.} = s.mGain
+proc gain*(s: Sound): float {.inline.} = s.gain

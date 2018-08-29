@@ -3,10 +3,10 @@ import streams, logging
 
 type
     Sound* = ref object
-        mDataSource: DataSource
+        dataSource: DataSource
         src: ALuint
-        mGain: ALfloat
-        mLooping: bool
+        gain: ALfloat
+        looping: bool
 
     Source* = ALuint
 
@@ -17,10 +17,10 @@ proc finalizeSound(s: Sound) =
 
 proc newSound(): Sound =
     result.new(finalizeSound)
-    result.mGain = 1
+    result.gain = 1
 
 proc `dataSource=`(s: Sound, ds: DataSource) = # Private for now. Should be public eventually
-    s.mDataSource = ds
+    s.dataSource = ds
 
 proc newSoundWithPCMData*(data: pointer, dataLength, channels, bitsPerSample, samplesPerSecond: int): Sound =
     ## This function is only availbale for openal for now. Sorry.
@@ -48,13 +48,13 @@ proc isSourcePlaying(src: ALuint): bool {.inline.} =
     alGetSourcei(src, AL_SOURCE_STATE, addr state)
     result = state == AL_PLAYING
 
-proc duration*(s: Sound): float {.inline.} = s.mDataSource.mDuration
+proc duration*(s: Sound): float {.inline.} = s.dataSource.duration
 
 proc stop*(src: Source) =
     alSourceStop(src)
 
 proc setLooping*(s: Sound, flag: bool) =
-    s.mLooping = flag
+    s.looping = flag
     if s.src != 0:
         alSourcei(s.src, AL_LOOPING, ALint(flag))
 
@@ -72,14 +72,14 @@ proc stop*(s: Sound) =
         alSourceStop(s.src)
 
 proc play*(s: Sound) =
-    if s.mDataSource.mBuffer != 0:
+    if s.dataSource.buffer != 0:
         if s.src == 0:
             s.src = reclaimInactiveSource()
             if s.src == 0:
                 alGenSources(1, addr s.src)
-            alSourcei(s.src, AL_BUFFER, cast[ALint](s.mDataSource.mBuffer))
-            alSourcef(s.src, AL_GAIN, s.mGain)
-            alSourcei(s.src, AL_LOOPING, ALint(s.mLooping))
+            alSourcei(s.src, AL_BUFFER, cast[ALint](s.dataSource.buffer))
+            alSourcef(s.src, AL_GAIN, s.gain)
+            alSourcei(s.src, AL_LOOPING, ALint(s.looping))
             alSourcePlay(s.src)
             if activeSounds.isNil: activeSounds = @[]
             activeSounds.add(s)
@@ -89,16 +89,16 @@ proc play*(s: Sound) =
 
 
 proc playWithSource*(s: Sound): Source =
-    if s.mDataSource.channels != 1:
+    if s.dataSource.channels != 1:
         echo "Only mono sounds work in 3d"
-    if s.mDataSource.mBuffer != 0:
+    if s.dataSource.buffer != 0:
         var src = reclaimInactiveSource()
         if src == 0:
             alGenSources(1, addr src)
             activeSounds.add(s)
-        alSourcei(src, AL_BUFFER, cast[ALint](s.mDataSource.mBuffer))
-        alSourcef(src, AL_GAIN, s.mGain)
-        alSourcei(src, AL_LOOPING, ALint(s.mLooping))
+        alSourcei(src, AL_BUFFER, cast[ALint](s.dataSource.buffer))
+        alSourcef(src, AL_GAIN, s.gain)
+        alSourcei(src, AL_LOOPING, ALint(s.looping))
         alSourcePlay(src)
         return src
 
@@ -108,8 +108,8 @@ proc setPos*(src: Source, x, y, z: float) =
 
 
 proc `gain=`*(s: Sound, v: float) =
-    s.mGain = v
+    s.gain = v
     if s.src != 0:
         alSourcef(s.src, AL_GAIN, v)
 
-proc gain*(s: Sound): float {.inline.} = s.mGain
+proc gain*(s: Sound): float {.inline.} = s.gain

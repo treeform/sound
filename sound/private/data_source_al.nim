@@ -4,12 +4,12 @@ import streams, os, strutils
 
 type
     DataSource* = ref object
-        mDuration*: float
-        mBuffer*: ALuint
+        duration*: float
+        buffer*: ALuint
         channels*: int
 
 proc finalizeDataSource(s: DataSource) =
-    if s.mBuffer != 0: alDeleteSources(1, addr s.mBuffer)
+    if s.buffer != 0: alDeleteSources(1, addr s.buffer)
 
 proc newDataSource(): DataSource =
     createContext()
@@ -33,13 +33,13 @@ proc newDataSourceWithPCMData*(data: pointer, dataLength, channels, bitsPerSampl
     let freq = ALsizei(samplesPerSecond)
 
     if not alContext.isNil:
-        alGenBuffers(1, addr result.mBuffer)
+        alGenBuffers(1, addr result.buffer)
         # Upload sound data to buffer
-        alBufferData(result.mBuffer, alFormat(channels, bitsPerSample), data, ALsizei(dataLength), freq)
+        alBufferData(result.buffer, alFormat(channels, bitsPerSample), data, ALsizei(dataLength), freq)
 
     let bytesPerSample = bitsPerSample div 8
     let samplesInChannel = dataLength div bytesPerSample
-    result.mDuration = (samplesInChannel.ALint / (freq.ALint * channels).ALint).float
+    result.duration = (samplesInChannel.ALint / (freq.ALint * channels).ALint).float
     result.channels = channels
 
 proc newDataSourceWithPCMData*(data: openarray[byte], channels, bitsPerSample, samplesPerSecond: int): DataSource {.inline.} =

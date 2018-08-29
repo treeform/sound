@@ -12,10 +12,10 @@ var activeSounds: seq[Sound]
 
 proc newSound(): Sound =
     result.new()
-    result.mGain = 1.0
+    result.gain = 1.0
 
 proc `dataSource=`(s: Sound, dataSource: DataSource) =
-    s.mDataSource = dataSource
+    s.dataSource = dataSource
 
 proc newSoundWithFile*(path: string): Sound =
     createContext()
@@ -44,23 +44,23 @@ proc reclaimInactiveSource() {.inline.} =
 
 proc submitBuffer(s: Sound) =
     var buf: XAUDIO2_BUFFER
-    buf.pAudioData = addr s.mDataSource.data[0]
-    buf.AudioBytes = uint32(s.mDataSource.data.len)
-    if s.mLooping:
+    buf.pAudioData = addr s.dataSource.data[0]
+    buf.AudioBytes = uint32(s.dataSource.data.len)
+    if s.looping:
         buf.LoopCount = XAUDIO2_LOOP_INFINITE
     discard s.sourceVoice.SubmitSourceBuffer(s.sourceVoice, addr buf, nil)
 
 proc play*(s: Sound) =
-    if not s.mDataSource.isNil:
+    if not s.dataSource.isNil:
         if s.sourceVoice.isNil:
             reclaimInactiveSource()
             if activeSounds.isNil: activeSounds = @[]
             activeSounds.add(s)
         else:
             discard s.sourceVoice.DestroyVoice(s.sourceVoice)
-        discard ixaudio2.CreateSourceVoice(ixaudio2, addr s.sourceVoice, addr s.mDataSource.wfx, 0, 0, nil, nil, nil)
+        discard ixaudio2.CreateSourceVoice(ixaudio2, addr s.sourceVoice, addr s.dataSource.wfx, 0, 0, nil, nil, nil)
         s.submitBuffer()
-        discard s.sourceVoice.SetVolume(s.sourceVoice, s.mGain, 0)
+        discard s.sourceVoice.SetVolume(s.sourceVoice, s.gain, 0)
         discard s.sourceVoice.Start(s.sourceVoice, 0, 0)
 
 proc stop*(s: Sound) =
@@ -68,16 +68,16 @@ proc stop*(s: Sound) =
         discard s.sourceVoice.Stop(s.sourceVoice, 0, 0)
 
 proc `gain=`*(s: Sound, v: float) =
-    s.mGain = v
+    s.gain = v
     if not s.sourceVoice.isNil:
-        discard s.sourceVoice.SetVolume(s.sourceVoice, s.mGain, 0)
+        discard s.sourceVoice.SetVolume(s.sourceVoice, s.gain, 0)
 
-proc gain*(s: Sound): float {.inline.} = s.mGain
+proc gain*(s: Sound): float {.inline.} = s.gain
 
 proc setLooping*(s: Sound, flag: bool) =
-    if s.mLooping != flag:
-        s.mLooping = flag
+    if s.looping != flag:
+        s.looping = flag
         if not s.sourceVoice.isNil:
             s.submitBuffer()
 
-proc duration*(s: Sound): float {.inline.} = s.mDataSource.mDuration
+proc duration*(s: Sound): float {.inline.} = s.dataSource.duration
