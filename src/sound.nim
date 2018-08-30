@@ -1,11 +1,9 @@
 import sound/openal, sound/data_source
-import streams, logging
+import streams, logging, vmath
 
 type
   Sound* = ref object
     dataSource: DataSource
-    gain*: ALfloat
-    looping*: bool
 
   Source* = ALuint
 
@@ -14,7 +12,6 @@ var activeSources: seq[Source]
 
 proc newSound(): Sound =
   result.new()
-  result.gain = 1
 
 proc `dataSource=`(s: Sound, ds: DataSource) = # Private for now. Should be public eventually
   s.dataSource = ds
@@ -43,6 +40,7 @@ proc newSoundFromDataSource*(ds: DataSource): Sound =
 proc duration*(s: Sound): float {.inline.} =
   s.dataSource.duration
 
+
 proc playing*(src: Source): bool {.inline.} =
   var state: ALenum
   alGetSourcei(src, AL_SOURCE_STATE, addr state)
@@ -51,8 +49,6 @@ proc playing*(src: Source): bool {.inline.} =
 proc stop*(src: Source) =
   alSourceStop(src)
 
-proc setLooping*(src: Source, flag: bool) =
-  alSourcei(src, AL_LOOPING, ALint(flag))
 
 proc reclaimInactiveSource(): Source {.inline.} =
   for i in 0 ..< activeSources.len:
@@ -69,15 +65,39 @@ proc play*(s: Sound): Source =
       alGenSources(1, addr src)
       activeSources.add(src)
     alSourcei(src, AL_BUFFER, cast[ALint](s.dataSource.buffer))
-    alSourcef(src, AL_GAIN, s.gain)
-    alSourcei(src, AL_LOOPING, ALint(s.looping))
     alSourcePlay(src)
     return src
 
-proc setPos*(src: Source, x, y, z: float) =
+proc `pos=`*(src: Source, x, y, z: float32) =
   alSource3f(src, AL_POSITION, x, y, z)
 
-proc `gain=`*(src: Source, v: float) =
+proc `pos=`*(src: Source, pos: Vec3) =
+  alSource3f(src, AL_POSITION, pos.x, pos.y, pos.z)
+
+proc `gain=`*(src: Source, v: float32) =
   alSourcef(src, AL_GAIN, v)
 
+proc `gain`*(src: Source): float32 =
+  alGetSourcef(src, AL_GAIN, addr result)
 
+proc `pitch=`*(src: Source, v: float32) =
+  alSourcef(src, AL_PITCH, v)
+
+proc `pitch`*(src: Source): float32 =
+  alGetSourcef(src, AL_PITCH, addr result)
+
+proc `offset=`*(src: Source, v: float32) =
+  alSourcef(src, AL_SEC_OFFSET, v)
+
+proc `offset`*(src: Source): float32 =
+  alGetSourcef(src, AL_SEC_OFFSET, addr result)
+
+proc `looping=`*(src: Source, v: bool) =
+  var looping: ALint = 0
+  if v == true: looping = 1
+  alSourcei(src, AL_LOOPING, looping)
+
+proc `looping`*(src: Source): bool =
+  var looping: ALint
+  alGetSourcei(src, AL_LOOPING, addr looping)
+  return looping == 1
