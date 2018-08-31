@@ -2,7 +2,6 @@ import os, math
 import vmath
 import sound
 
-
 block:
   echo "playing wav file"
   let sound = newSoundWithFile("tests/ding.wav")
@@ -21,7 +20,7 @@ block:
   echo "playing on the right"
   var source = sound.play()
   source.pos = vec3(1,0,0)
-  sleep(2500)
+  sleep(1500)
   source.stop()
 
   sleep(500)
@@ -29,7 +28,7 @@ block:
   echo "playing on the left"
   source = sound.play()
   source.pos = vec3(-1,0,0)
-  sleep(2500)
+  sleep(1500)
   source.stop()
 
 block:
@@ -37,11 +36,26 @@ block:
   let sound = newSoundWithFile("tests/drums.mono.wav")
   var source = sound.play()
   source.looping = true
-  # make 2 rounds
-  echo "rotateing sound in 3d, 2 rotations"
-  for i in 0..360 * 2:
+  echo "rotateing sound in 3d, 1 rotation"
+  for i in 0..360:
     let a = float(i) / 180 * PI
     source.pos = vec3(sin(a), cos(a), 0)
+    sleep(20)
+  source.stop()
+  sleep(500)
+
+block:
+  # doppler waves shift as police car pases
+  let sound = newSoundWithFile("tests/siren.wav")
+  var source = sound.play()
+  source.looping = true
+  source.pos = vec3(-100, -100, 0)
+  source.vel = vec3(1, 1, 0) * 50
+  source.gain = 10
+  echo "setting velcoity and position"
+  for i in 1..200:
+    source.pos = source.pos + source.vel / 50
+    echo "    ", source.pos, source.vel
     sleep(20)
   source.stop()
   sleep(500)
@@ -51,10 +65,10 @@ block:
   let sound = newSoundWithFile("tests/drums.sterio.wav")
   var source = sound.play()
   source.looping = true
-  # make 2 rounds
   echo "setting gain from 0 to 2"
   for i in 0..100:
-    source.gain = float(i)/100
+    let a = float(i)/100
+    source.gain = a * a
     echo "    ", source.gain
     sleep(20)
   source.stop()
@@ -77,12 +91,57 @@ block:
   # reset offset
   let sound = newSoundWithFile("tests/drums.sterio.wav")
   var source = sound.play()
-  source.looping = true
   # make 2 rounds
-  echo "setting gain from 0 to 2"
-  for i in 0..3:
+  echo "restarting source 3 times"
+  for i in 0..2:
     source.offset = 0
+    source.play()
     sleep(300)
     echo "    ", source.offset
-  source.stop()
+    source.stop()
   sleep(500)
+
+block:
+  echo "try to play fur elise "
+  let sound = newSoundWithFile("tests/ding.wav")
+  proc playNote(freq: int) =
+    var source = sound.play()
+    source.pitch = float(freq) * 0.002
+    sleep int(120.0 * 1.5)
+    echo "    activeSources:", activeSources.len
+  playNote(659)
+  playNote(622)
+  playNote(659)
+  playNote(622)
+  playNote(659)
+  playNote(494)
+  playNote(587)
+  playNote(523)
+  playNote(440)
+  playNote(262)
+  playNote(330)
+  playNote(440)
+  playNote(494)
+  playNote(330)
+  playNote(415)
+  playNote(494)
+  playNote(523)
+  playNote(330)
+  playNote(659)
+  playNote(622)
+  playNote(659)
+  playNote(622)
+  playNote(659)
+  playNote(494)
+  playNote(587)
+  playNote(523)
+  playNote(440)
+  playNote(262)
+  playNote(330)
+  playNote(440)
+  playNote(494)
+  playNote(330)
+  playNote(523)
+  playNote(494)
+  playNote(440)
+  sleep 1000

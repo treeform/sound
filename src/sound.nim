@@ -7,14 +7,11 @@ type
 
   Source* = ALuint
 
-var activeSources: seq[Source]
+var activeSources*: seq[Source]
 
 
 proc newSound(): Sound =
   result.new()
-
-proc `dataSource=`(s: Sound, ds: DataSource) = # Private for now. Should be public eventually
-  s.dataSource = ds
 
 proc newSoundWithPCMData*(data: pointer, dataLength, channels, bitsPerSample, samplesPerSecond: int): Sound =
   ## This function is only availbale for openal for now. Sorry.
@@ -33,13 +30,11 @@ proc newSoundWithStream*(s: Stream): Sound =
   result = newSound()
   result.dataSource = newDataSourceWithStream(s)
 
-proc newSoundFromDataSource*(ds: DataSource): Sound =
-  result = newSound()
-  result.dataSource = ds
-
 proc duration*(s: Sound): float {.inline.} =
   s.dataSource.duration
 
+proc channels*(s: Sound): int {.inline.} =
+  s.dataSource.channels
 
 proc playing*(src: Source): bool {.inline.} =
   var state: ALenum
@@ -49,6 +44,8 @@ proc playing*(src: Source): bool {.inline.} =
 proc stop*(src: Source) =
   alSourceStop(src)
 
+proc play*(src: Source) =
+  alSourcePlay(src)
 
 proc reclaimInactiveSource(): Source {.inline.} =
   for i in 0 ..< activeSources.len:
@@ -68,11 +65,47 @@ proc play*(s: Sound): Source =
     alSourcePlay(src)
     return src
 
-proc `pos=`*(src: Source, x, y, z: float32) =
-  alSource3f(src, AL_POSITION, x, y, z)
-
 proc `pos=`*(src: Source, pos: Vec3) =
   alSource3f(src, AL_POSITION, pos.x, pos.y, pos.z)
+
+proc `pos`*(src: Source): Vec3 =
+  var tmp = [ALfloat(0.0),0.0,0.0]
+  alGetSourcefv(src, AL_POSITION, addr tmp[0])
+  return vec3(tmp[0], tmp[1], tmp[2])
+
+proc `vel=`*(src: Source, vel: Vec3) =
+  alSource3f(src, AL_VELOCITY, vel.x, vel.y, vel.z)
+
+proc `vel`*(src: Source): Vec3 =
+  var tmp = [ALfloat(0.0),0.0,0.0]
+  alGetSourcefv(src, AL_VELOCITY, addr tmp[0])
+  return vec3(tmp[0], tmp[1], tmp[2])
+
+proc `mat=`*(src: Source, mat: Mat4) =
+  var tmp1 = [ALfloat(0.0), 0.0, 0.0]
+  tmp1[0] = mat.pos.x
+  tmp1[1] = mat.pos.y
+  tmp1[2] = mat.pos.z
+  alSourcefv(src, AL_POSITION, addr tmp1[0])
+  var tmp2 = [ALfloat(0.0), 0.0, 0.0, 0.0, 0.0, 0.0]
+  tmp2[0] = mat.fov.x
+  tmp2[1] = mat.fov.y
+  tmp2[2] = mat.fov.z
+  tmp2[3] = mat.up.x
+  tmp2[4] = mat.up.y
+  tmp2[5] = mat.up.z
+  alSourcefv(src, AL_ORIENTATION, addr tmp2[0])
+
+proc `mat`*(src: Source): Mat4 =
+  var tmp1 = [ALfloat(0.0), 0.0, 0.0]
+  alGetSourcefv(src, AL_POSITION, addr tmp1[0])
+  var tmp2 = [ALfloat(0.0), 0.0, 0.0, 0.0, 0.0, 0.0]
+  alGetSourcefv(src, AL_ORIENTATION, addr tmp2[0])
+  return lookAt(
+    vec3(tmp1[0], tmp1[1], tmp1[2]),
+    vec3(tmp2[0], tmp2[1], tmp2[2]),
+    vec3(tmp2[3], tmp2[4], tmp2[5])
+  )
 
 proc `gain=`*(src: Source, v: float32) =
   alSourcef(src, AL_GAIN, v)
