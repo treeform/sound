@@ -1,29 +1,5 @@
-# sound [![nimble](https://raw.githubusercontent.com/yglukhov/nimble-tag/master/nimble_js.png)](https://github.com/yglukhov/nimble-tag)
+# Sound 3d
 
-Cross-platform sound mixer library
+This is a wrapper around openAL library that provides a more nim-like api for 3d sound.
 
-The library is using different "backends" depending on target platform:
-- **Linux**, **MacOS**, **iOS**: OpenAL. Supported formats: ogg+vorbis
-- **Windows**: XAudio2. Supported formats: ogg+vorbis
-- **Android**: SLES. Supported formats: ogg+vorbis
-- **JavaScript**, **Asm.js**: WebAudio. Supported formats: mp3 (and ogg+vorbis on some browsers)
 
-Usage:
-```nim
-import sound.sound
-
-when defined(android):
-    var activity: jobject # You should get the reference to activity from somewhere.
-    activity = androidGetActivity() # E.g. If you're using sdl.
-    initSoundEngineWithActivity(activity)
-
-var snd: Sound
-when defined(android):
-    snd = newSoundWithPath("testfile.ogg") # The path is relative to assets folder
-elif defined(js):
-    snd = newSoundWithURL("testfile.ogg") # The url may be relative or absolute. The sound is loaded asynchronously.
-else:
-    snd = newSoundWithPath("testfile.ogg") # The path is relative to current dir.
-
-snd.play()
-```

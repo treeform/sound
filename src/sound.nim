@@ -1,5 +1,6 @@
-import sound/openal, sound/data_source
 import streams, logging, vmath
+import openal
+import sound/data_source
 
 type
   Sound* = ref object
